@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoSync Chatbot</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 260px;
+      background-color: #f0f0f0;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #ddd;
+      position: relative;
+      z-index: 999;
+    }
+
+    .sidebar.hidden {
+      transform: translateX(-100%);
+      position: absolute;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sidebar-toggle-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #00796b;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .chat-session-list {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin: 15px 0;
+    }
+
+    .chat-session-item {
+      padding: 10px;
+      margin-bottom: 5px;
+      background-color: #ffffff;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .chat-session-item:hover {
+      background-color: #e0e0e0;
+    }
+
+    .sidebar-actions button {
+      width: 100%;
+      margin-bottom: 10px;
+      background-color: #00796b;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      background: #f0fff4;
+      overflow-y: auto;
+      transition: margin-left 0.3s ease;
+      padding: 20px;
+    }
+
+    .chat-box {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    .chat-entry {
+      margin-bottom: 20px;
+      background: #ffffff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .chat-entry.user {
+      background: #c8e6c9;
+      align-self: flex-end;
+    }
+
+    .chat-entry.bot {
+      background: #e8f5e9;
+      align-self: flex-start;
+    }
+
+    .form-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    textarea {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+    }
+
+    .emoji-buttons {
+      margin-top: 10px;
+    }
+
+    .emoji-buttons button {
+      background: none;
+      font-size: 20px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .voice-controls {
+      margin-top: 10px;
+    }
+
+    .voice-controls button {
+      margin-right: 10px;
+      background-color: #009688;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button[type="submit"] {
+      background-color: #00796b;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: absolute;
+        height: 100vh;
+        top: 0;
+        left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="sidebar-toggle-btn" onclick="toggleSidebar()">☰</button>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>EcoSync</h3>
+      <button class="sidebar-toggle" onclick="toggleSidebar()">⨯</button>
+    </div>
+    <div class="chat-session-list">
+      {% for item in history %}
+        <div class="chat-session-item" title="{{ item.question }}">{{ item.question }}</div>
+      {% endfor %}
+    </div>
+    <div class="sidebar-actions">
+      <form method="POST">
+        <button type="submit" name="new_chat">➕ New Chat</button>
+        <button type="submit" name="clear_chat">🗑️ Clear Chat</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="main">
+    <h1 style="margin: 0;">🌿 EcoSync Chat</h1>
+    <div class="chat-box">
+      {% for entry in history %}
+        <div class="chat-entry user">
+          <strong>You:</strong> {{ entry.question }}
+        </div>
+        <div class="chat-entry bot">
+          <strong>EcoSync:</strong> {{ entry.answer }}
+          <div class="emoji-buttons">
+            <button onclick="alert('You liked this answer! 👍')">👍</button>
+            <button onclick="alert('You disliked this answer! 👎')">👎</button>
+          </div>
+          <div class="voice-controls">
+            <button onclick="speak('{{ entry.answer | safe }}')">🔊 Speak</button>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <form method="POST" class="form-container">
+      <textarea name="question" placeholder="Ask your sustainability question..." required></textarea>
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      sidebar.classList.toggle("hidden");
+    }
+
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    }
+
+    // Submit form with Enter key
+    const textarea = document.querySelector('textarea[name="question"]');
+    const form = textarea.closest('form');
+
+    textarea.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.submit();
+      }
+    });
+  </script>
+</body>
+</html>
