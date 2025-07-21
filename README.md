@@ -59,26 +59,17 @@ import secrets
 print(secrets.token_hex(32))
 🚀 Setup Instructions
 1. Clone this Repo
-bash
-Copy
-Edit
 git clone https://github.com/YOUR_USERNAME/ecosync-chatbot.git
 cd ecosync-chatbot
+
 2. Create Virtual Environment
-bash
-Copy
-Edit
 python -m venv ecoenv
 source ecoenv/bin/activate  # On Windows: ecoenv\Scripts\activate
+
 3. Install Requirements
-bash
-Copy
-Edit
 pip install -r requirements.txt
+
 4. Run the App
-bash
-Copy
-Edit
 python app.py
 Open browser: http://127.0.0.1:5000
 
