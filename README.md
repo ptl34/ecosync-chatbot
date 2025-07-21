@@ -68,6 +68,9 @@ source ecoenv/bin/activate  # On Windows: ecoenv\Scripts\activate
 
 3. Install Requirements
 pip install -r requirements.txt
+Flask
+python-dotenv
+google-generativeai
 
 4. Run the App
 python app.py
